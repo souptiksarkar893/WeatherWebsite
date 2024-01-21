@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather App</title>
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+        text-align: center;
+        animation: fadeInAnimation ease 2s;
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes fadeInAnimation {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      #weather-container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #fff;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+
+      #city-input {
+        padding: 8px;
+        font-size: 16px;
+      }
+
+      #submit-btn {
+        padding: 8px 16px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      #weather-info {
+        margin-top: 20px;
+        text-align: left; /* Align text to the left */
+      }
+
+      .weather-info-item {
+        margin-bottom: 15px;
+      }
+
+      .weather-info-item i {
+        margin-right: 10px;
+      }
+
+      .sticky-weather {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        padding: 20px;
+        text-align: center;
+        font-size: 14px;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); /* Add a subtle shadow at the bottom */
+      }
+
+      .sticky-weather-item {
+        display: inline-block;
+        width: calc(20% - 20px); /* Adjust width based on the number of items */
+        margin-right: 20px;
+        margin-bottom: 20px; /* Add a bottom margin for vertical gap */
+        background-color: #fff;
+        color: #000;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: left;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Add a drop shadow */
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .sticky-weather {
+          position: relative;
+          box-shadow: none; /* Remove shadow for mobile view */
+        }
+
+        .sticky-weather-item {
+          display: block;
+          width: 100%; /* Full width for mobile view */
+          margin-right: 0;
+          margin-bottom: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body class="container-fluid">
+    <!-- Main Weather Container -->
+    <div id="weather-container" class="container">
+      <h2>Weather App</h2>
+      <div class="input-group mb-3">
+        <input
+          type="text"
+          class="form-control"
+          id="city-input"
+          placeholder="Enter city name"
+        />
+        <div class="input-group-append">
+          <button
+            class="btn btn-primary"
+            type="button"
+            onclick="getWeather()"
+            id="submit-btn"
+          >
+            Submit
+          </button>
+        </div>
+      </div>
+
+      <div id="weather-info"></div>
+    </div>
+
+    <!-- Sticky Weather Section -->
+    <div class="sticky-weather">
+      <div id="sticky-weather-items"></div>
+    </div>
+
+    <script>
+      const apiKey = "YOUR-API-KEY";
+
+      const cities = ["New York", "Dubai", "London", "Berlin", "Kutaisi"];
+
+      // Function to fetch weather data for a city
+      async function getWeather() {
+        const cityInput = document.getElementById("city-input").value;
+
+        if (cityInput.trim() === "") {
+          alert("Please enter a city name.");
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `https://api.openweathermap.org/data/2.5/weather?q=${cityInput}&appid=${apiKey}&units=metric`
+          );
+          const data = await response.json();
+
+          const weatherInfo = document.getElementById("weather-info");
+          weatherInfo.innerHTML = `
+                <div class="weather-info-item">
+                    <h3>${data.name}, ${data.sys.country}</h3>
+                    <p><i class="fas fa-thermometer-half"></i> Temperature: ${data.main.temp} °C</p>
+                    <p><i class="fas fa-tint"></i> Humidity: ${data.main.humidity}%</p>
+                    <p><i class="fas fa-wind"></i> Wind Speed: ${data.wind.speed} m/s</p>
+                    <p><i class="fas fa-cloud"></i> Weather: ${data.weather[0].description}</p>
+                    <p><i class="fas fa-tachometer-alt"></i> Pressure: ${data.main.pressure} hPa</p>
+                </div>
+            `;
+        } catch (error) {
+          console.error("Error fetching weather data:", error);
+          alert("Error fetching weather data. Please try again.");
+        }
+      }
+
+      // Display sticky weather information
+      async function displayStickyWeather() {
+        const stickyWeatherItems = document.getElementById(
+          "sticky-weather-items"
+        );
+
+        for (const city of cities) {
+          try {
+            const response = await fetch(
+              `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
+            );
+            const data = await response.json();
+
+            const item = document.createElement("div");
+            item.className = "sticky-weather-item";
+            item.innerHTML = `
+                    <h5>${city} <i class="fas fa-map-marker-alt"></i></h5>
+                    <p><i class="fas fa-thermometer-half"></i> Temperature: ${data.main.temp} °C</p>
+                    <p><i class="fas fa-tint"></i> Humidity: ${data.main.humidity}%</p>
+                    <p><i class="fas fa-wind"></i> Wind Speed: ${data.wind.speed} m/s</p>
+                    <p><i class="fas fa-cloud"></i> Weather: ${data.weather[0].description}</p>
+                    <p><i class="fas fa-tachometer-alt"></i> Pressure: ${data.main.pressure} hPa</p>
+                `;
+
+            stickyWeatherItems.appendChild(item);
+          } catch (error) {
+            console.error(`Error fetching weather data for ${city}:`, error);
+          }
+        }
+      }
+
+      // Call displayStickyWeather on page load
+      window.onload = function () {
+        displayStickyWeather();
+        // You may add additional initialization code here.
+      };
+    </script>
+  </body>
+</html>
